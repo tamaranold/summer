@@ -14,6 +14,7 @@ library(tidyverse) #data management
 col_load <- "purple"
 col_start <- "deeporange"
 #getF7Colors()
+#f7Gallery()
 
 # app
 shinyApp(
@@ -66,26 +67,7 @@ shinyApp(
           f7Card(
             #create scoreingboard including each named player
             f7List(
-              lapply(1:6, function(j) {
-                f7ListItem(
-                  #sum score
-                  f7Row(
-                    f7Col(
-                      f7Button(
-                        inputId = paste0("scorebutton", j),
-                        label = paste0("score", j),
-                        size = "large"
-                      )),
-                    #score for each round
-                    f7Col(
-                      f7Text(
-                        inputId = paste0("roundscore", j),
-                        label = "",
-                        value = 0))),
-                  media = f7Icon("alarm_fill"),
-                  header = "Name"
-                )
-              })
+              uiOutput("scores")
             ),
             br(),
             #add round score to sum score
@@ -112,13 +94,56 @@ shinyApp(
                    selected = 'hiddentab')
     })
     
-    #accept numbers only as round score
-    observe({
-      validateF7Input(
-        inputId = "roundscore1",
-        pattern = "^-?[0-9]*",
-        error = "Only numbers please!")
+    output$scores <- renderUI({
+      req(length(players()) > 0)
+      lapply(1:length(players()), function(j) {
+        f7ListItem(
+          #sum score
+          f7Row(
+            f7Col(
+              f7Button(
+                inputId = paste0("scorebutton", j),
+                label = 0,
+                size = "large"
+              )),
+            #score for each round
+            f7Col(
+              f7Text(
+                inputId = paste0("roundscore", j),
+                label = "",
+                value = 0))),
+          media = f7Icon("alarm_fill"),
+          header = players()[j]
+        )
+      })
     })
-
-  }
+    
+   
+   scores <- reactiveValues(player1 = 0,
+                            player2 = 0,
+                            player3 = 0,
+                            player4 = 0)
+   
+   observeEvent(input$addbutton, {
+     for(i in 1:length(players())){
+       scores[[paste0("player", i)]]<- as.numeric(input[[paste0("roundscore", i)]]) +
+         as.numeric(scores[[paste0("player", i)]])}
+     })
+    
+   observeEvent(input$addbutton, {
+    lapply(1:length(players()), function(j){ 
+     updateF7Button(
+      inputId = paste0("scorebutton", j),
+      label = scores[[paste0("player", j)]]
+    )
+    
+    updateF7Text(
+      inputId = paste0("roundscore", j),
+      value = 0
+      ) 
+    })
+   })
+   
+   
+   }
 )
