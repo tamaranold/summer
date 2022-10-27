@@ -100,19 +100,6 @@ shinyApp(
                                                                            input$player5, input$player6, input$player7, input$player8)) > 0]
     })
     
-    # initiate dataframe for results
-    data <- eventReactive(input$startbutton, {
-      data.frame(matrix(ncol = length(players()),
-                        dimnames = list(c(), players())))
-    })
-  
-    # render result table
-    output$tbl <- DT::renderDataTable(
-      datatable(data(),
-                style = 'bootstrap',
-                class = "table-dark table-striped")
-    )
-   
     observeEvent(input$startbutton,{
       updateF7Tabs(session = session, 
                    id = 'tabs', 
