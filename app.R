@@ -1,12 +1,13 @@
 # Summer App
 
-# install shinymobile from github - hidden tab not working
+# Sum score for turn base games
+
+# install shinyMobile from github - hidden tab not working
 #devtools::install_github("RinteRface/shinyMobile@rc-1.0.0")
 
 # load packages
 library(shiny) #app
 library(shinyMobile) #app for smartphone
-library(DT) #tables
 library(tidyverse) #data management
 
 # color theme
@@ -58,32 +59,36 @@ shinyApp(
           f7Card(
             )),
         
-        #table
+        #score tab
         f7Tab(
           tabName = "hiddentab",
           hidden = TRUE,
           f7Card(
+            #create scoreingboard including each named player
             f7List(
               lapply(1:6, function(j) {
                 f7ListItem(
+                  #sum score
                   f7Row(
                     f7Col(
-                    f7Button(
-                      inputId = paste0("scorebutton", j),
-                      label = paste0("score", j),
-                      size = "large"
-                    )),
+                      f7Button(
+                        inputId = paste0("scorebutton", j),
+                        label = paste0("score", j),
+                        size = "large"
+                      )),
+                    #score for each round
                     f7Col(
-                    f7Text(
-                      inputId = paste0("roundscore", j),
-                      label = "",
-                      value = 0))),
+                      f7Text(
+                        inputId = paste0("roundscore", j),
+                        label = "",
+                        value = 0))),
                   media = f7Icon("alarm_fill"),
                   header = "Name"
                 )
               })
             ),
             br(),
+            #add round score to sum score
             f7Button(
               inputId = "addbutton",
               label = "Add scores"
@@ -100,12 +105,20 @@ shinyApp(
                                                                            input$player5, input$player6, input$player7, input$player8)) > 0]
     })
     
+    #initiate scoreingboard
     observeEvent(input$startbutton,{
       updateF7Tabs(session = session, 
                    id = 'tabs', 
                    selected = 'hiddentab')
     })
     
+    #accept numbers only as round score
+    observe({
+      validateF7Input(
+        inputId = "roundscore1",
+        pattern = "^-?[0-9]*",
+        error = "Only numbers please!")
+    })
 
   }
 )
