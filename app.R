@@ -63,13 +63,32 @@ shinyApp(
           tabName = "hiddentab",
           hidden = TRUE,
           f7Card(
-            DTOutput('tbl'),
-                 br(),
-                 #save button
-                 f7Button(
-                   inputId = "savebutton",
-                   color = col_load, 
-                   label = "Start game"))
+            f7List(
+              lapply(1:6, function(j) {
+                f7ListItem(
+                  f7Row(
+                    f7Col(
+                    f7Button(
+                      inputId = paste0("scorebutton", j),
+                      label = paste0("score", j),
+                      size = "large"
+                    )),
+                    f7Col(
+                    f7Text(
+                      inputId = paste0("roundscore", j),
+                      label = "",
+                      value = 0))),
+                  media = f7Icon("alarm_fill"),
+                  header = "Name"
+                )
+              })
+            ),
+            br(),
+            f7Button(
+              inputId = "addbutton",
+              label = "Add scores"
+            )
+          )
         )))),
   
   server = function(input, output, session) {
