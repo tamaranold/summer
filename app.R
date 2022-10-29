@@ -41,11 +41,13 @@ shinyApp(
           #list of players
           f7Card(
             title = "Who wants to play?",
-            f7Stepper(inputId = "numberplayer",
-                      label = NULL,
-                      min = 1,
-                      max = 50,
-                      value = 4),
+            f7Stepper(
+              inputId = "numberplayer",
+              label = NULL,
+              min = 1,
+              max = 50,
+              value = 4
+            ),
             uiOutput("namesplayer"),
             br(),
             
@@ -65,6 +67,29 @@ shinyApp(
           tabName = "hiddentab",
           hidden = TRUE,
           f7Card(
+            f7Row(
+              f7Col(
+                f7Stepper(
+                  inputId = "numhigh",
+                  min = 0,
+                  max = 10,
+                  value = 0,
+                  label = "Color highest values"
+                )    
+              ),
+              f7Col(
+              f7Stepper(
+                inputId = "numlow",
+                min = 0,
+                max = 10,
+                value = 0,
+                label = "Color lowest values"
+              ))
+            )
+            
+            ),
+          f7Card(
+            
             #create scoreingboard including each named player
             f7List(uiOutput("list"),
                    mode = "media"),
@@ -74,19 +99,21 @@ shinyApp(
             f7Button(inputId = "addbutton",
                      label = "Add scores"),
             br(),
-            f7Row(
-              #reset game
+            f7Row(#reset game
               f7Col(
                 f7Button(inputId = "resetbutton",
-                         label = "Reset game")
+                         label = "Reset game",
+                         outline = TRUE,
+                         fill = FALSE)
               ),
               #save results
               f7Col(
                 f7Button(inputId = "savebutton",
-                         label = "Save results")
-              )
-            )
-           
+                         label = "Save results",
+                         outline = TRUE,
+                         fill = FALSE)
+              ))
+            
           )
         )
       )
@@ -125,14 +152,16 @@ shinyApp(
     })
     
     
-    output$namesplayer <- renderUI({lapply(1:number(),
-           function(x) {
-             f7Text(
-               inputId = paste0("player", x),
-               label = NULL,
-               placeholder = paste("Name Player", x)
-             )
-           })})
+    output$namesplayer <- renderUI({
+      lapply(1:number(),
+             function(x) {
+               f7Text(
+                 inputId = paste0("player", x),
+                 label = NULL,
+                 placeholder = paste("Name Player", x)
+               )
+             })
+    })
     
     #initiate scoreingboard
     observeEvent(input$startbutton, {
@@ -181,7 +210,8 @@ shinyApp(
           validateF7Input(
             inputId = paste0("roundscore", j),
             pattern = "^-?[0-9]*",
-            error = "Only numbers please!"
+            error = "Only numbers please!",
+            session = session
           )
         })
       })
