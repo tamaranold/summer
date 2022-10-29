@@ -19,7 +19,7 @@ shinyApp(
     options = list(
       theme = "md",
       dark = TRUE,
-      color = "deeppurple",
+      color = "deeppurple"
     ),
     f7TabLayout(
       navbar = f7Navbar(
@@ -218,7 +218,7 @@ shinyApp(
                      value = 0)
       })
     })
-   
+    
     #reset game
     observeEvent(input$resetbutton, {
       lapply(1:length(players()), function(j) {
@@ -228,14 +228,12 @@ shinyApp(
         updateF7Text(inputId = paste0("roundscore", j),
                      value = 0)
       })
-    }) 
+    })
     
     #saving results
     observeEvent(input$savebutton, {
       
-
-      
-    }) 
+    })
     
   }
 )
