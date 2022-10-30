@@ -57,39 +57,11 @@ shinyApp(
           )
         ),
         
-        #saved games tab
-        f7Tab(tabName = "Saved",
-              icon = f7Icon("floppy_disk"),
-              f7Card()),
-        
         #score tab
         f7Tab(
           tabName = "hiddentab",
           hidden = TRUE,
           f7Card(
-            f7Row(
-              f7Col(
-                f7Stepper(
-                  inputId = "numhigh",
-                  min = 0,
-                  max = 10,
-                  value = 0,
-                  label = "Color highest values"
-                )    
-              ),
-              f7Col(
-              f7Stepper(
-                inputId = "numlow",
-                min = 0,
-                max = 10,
-                value = 0,
-                label = "Color lowest values"
-              ))
-            )
-            
-            ),
-          f7Card(
-            
             #create scoreingboard including each named player
             f7List(uiOutput("list"),
                    mode = "media"),
@@ -101,18 +73,31 @@ shinyApp(
             br(),
             f7Row(#reset game
               f7Col(
-                f7Button(inputId = "resetbutton",
-                         label = "Reset game",
-                         outline = TRUE,
-                         fill = FALSE)
+                f7Button(
+                  inputId = "resetbutton",
+                  label = "Reset game",
+                  outline = TRUE,
+                  fill = FALSE
+                )
               ),
-              #save results
+              #options
               f7Col(
-                f7Button(inputId = "savebutton",
-                         label = "Save results",
-                         outline = TRUE,
-                         fill = FALSE)
-              ))
+                f7Button(
+                  inputId = "optionsbutton",
+                  label = "Options",
+                  outline = TRUE,
+                  fill = FALSE
+                )
+              )),
+            verbatimTextOutput("text")
+            
+          ),
+          f7Sheet(
+            id = "optionssheet",
+            label = "Highlights",
+            orientation = "bottom",
+            uiOutput("options")
+            
             
           )
         )
@@ -172,7 +157,6 @@ shinyApp(
     
     output$list <- renderUI({
       req(length(players()) > 0)
-      req(tbl)
       
       lapply(1:length(players()), function(j) {
         f7ListItem(#sum score
@@ -198,12 +182,11 @@ shinyApp(
     
     #accept numbers only in input$roundscore
     #realtime update for input$roundscore
-    #texts <- reactive({
-    #  req(input$roundscore1)
-    #  map(1:length(players()), ~ input[[paste0("roundscore", .x)]])
-    #})
+    texts <- reactive({
+      req(input$roundscore1)
+      map(1:length(players()), ~ input[[paste0("roundscore", .x)]])
+    })
     
-    #check input$roundscore for characters
     observeEvent(input$startbutton, {
       lapply(1:length(players()), function(j) {
         observe({
@@ -218,17 +201,12 @@ shinyApp(
     })
     
     #start score
-    scores <- reactiveValues(
-      player1 = 0,
-      player2 = 0,
-      player3 = 0,
-      player4 = 0,
-      player5 = 0,
-      player6 = 0,
-      player7 = 0,
-      player8 = 0
-      
-    )
+    scores <- reactiveValues()
+    observeEvent(input$startbutton, {
+      for (i in 1:length(players())) {
+        scores[[paste0("player", i)]] <- 0
+      }
+    })
     
     #sum score
     observeEvent(input$addbutton, {
@@ -260,10 +238,58 @@ shinyApp(
       })
     })
     
-    #saving results
-    observeEvent(input$savebutton, {
-      
+    #options
+    observeEvent(input$optionsbutton, {
+      updateF7Sheet(id = "optionssheet")
     })
+    
+    output$options <- renderUI({
+      tagList(f7Row(f7Col(
+        f7Radio(
+          inputId = "arrange",
+          choices = c("The highest",
+                      "The lowest"),
+          selected = "The highest",
+          label = "Which scores do you want to highlight?"
+        )
+      ),
+      f7Col(
+        f7Stepper(
+          inputId = "numhigh",
+          min = 0,
+          max = length(players()),
+          value = 0,
+          label = ""
+        )
+      )))
+    })
+    
+    poshigh <-
+      eventReactive(input$numhigh | input$addbutton | nchar(input$arrange), {
+        req(input$arrange)
+        
+        arr <- (input$arrange == "The highest")
+        
+        ifelse(input$numhigh == 0,
+               0,
+               which((order(
+                 map_dbl(1:length(players()), ~ scores[[paste0("player", .)]]),
+                 decreasing = arr
+               )) <= input$numhigh))
+      })
+    
+    observeEvent(poshigh(), {
+      ifelse(length(poshigh()) == 1 &  poshigh() == 0,
+             lapply(1:length(players()), function(x) {
+               updateF7Button(inputId = paste0("scorebutton", x),
+                              color = "deeppurple")
+             }),
+             lapply(poshigh(), function(x) {
+               updateF7Button(inputId = paste0("scorebutton", x),
+                              color = "pink")
+             }))
+    })
+    
     
   }
 )
