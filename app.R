@@ -10,6 +10,7 @@ library(shiny) #app
 library(shinyMobile) #app for smartphone
 library(tidyverse) #data management
 
+
 #getF7Colors()
 #f7Gallery()
 
@@ -88,9 +89,7 @@ shinyApp(
                   outline = TRUE,
                   fill = FALSE
                 )
-              )),
-            verbatimTextOutput("text")
-            
+              ))
           ),
           f7Sheet(
             id = "optionssheet",
@@ -105,61 +104,48 @@ shinyApp(
     )
   ),
   
-  server = function(input, output, session) {
-    # list of all players
-    players <- eventReactive(input$startbutton, {
-      c(
-        input$player1,
-        input$player2,
-        input$player3,
-        input$player4,
-        input$player5,
-        input$player6,
-        input$player7,
-        input$player8
-      )[nchar(
-        c(
-          input$player1,
-          input$player2,
-          input$player3,
-          input$player4,
-          input$player5,
-          input$player6,
-          input$player7,
-          input$player8
-        )
-      ) > 0]
+    server = function(input, output, session) {
+      
+      ##start game (tabName = "Start")
+      #get numbers of players from stepper
+      number <- reactive({
+        input$numberplayer
+      }) 
+      
+      #create name slot for each player
+      output$namesplayer <- renderUI({
+        lapply(1:number(),
+               function(x) {
+                 f7Text(
+                   inputId = paste0("player", x),
+                   label = NULL,
+                   placeholder = paste("Name Player", x)
+                 )
+               })
+      })
+      
+     #list all players by name
+      players <- eventReactive(input$startbutton, {
+      p <- map_chr(1:number(), ~input[[paste0("player", .)]])
+      p[p != ""]
     })
     
-    #name players
-    number <- reactive({
-      input$numberplayer
-    })
-    
-    
-    output$namesplayer <- renderUI({
-      lapply(1:number(),
-             function(x) {
-               f7Text(
-                 inputId = paste0("player", x),
-                 label = NULL,
-                 placeholder = paste("Name Player", x)
-               )
-             })
-    })
-    
+
     #initiate scoreingboard
-    observeEvent(input$startbutton, {
-      updateF7Tabs(session = session,
-                   id = 'tabs',
-                   selected = 'hiddentab')
-    })
+      observeEvent(input$startbutton, {
+        updateF7Tabs(session = session,
+                     id = 'tabs',
+                     selected = 'hiddentab')
+      })
     
+    ##sum scores (tabName = "hidden")  
+    #initiate scores for each player
     output$list <- renderUI({
       req(length(players()) > 0)
       
       lapply(1:length(players()), function(j) {
-        f7ListItem(#sum score
+        f7ListItem(
+          #sum score
           f7Row(f7Col(
             f7Button(
               inputId = paste0("scorebutton", j),
@@ -176,7 +162,13 @@ shinyApp(
             )
           )),
           title = players()[j])
-      })
+      }),
+      
+      f7Text(
+        inputId = "caption2",
+        label = "Enter a number",
+        value = 1
+      )
     })
     
     
@@ -184,22 +176,32 @@ shinyApp(
     #realtime update for input$roundscore
     texts <- reactive({
       req(input$roundscore1)
-      map(1:length(players()), ~ input[[paste0("roundscore", .x)]])
+      map_chr(1:length(players()), ~ input[[paste0("roundscore", .x)]])
     })
     
-    observeEvent(input$startbutton, {
-      lapply(1:length(players()), function(j) {
-        observe({
-          validateF7Input(
-            inputId = paste0("roundscore", j),
-            pattern = "^-?[0-9]*",
-            error = "Only numbers please!",
-            session = session
-          )
+    #observeEvent(input$startbutton | nchar(texts()), {
+     # lapply(1:length(players()), function(j) {
+    #    observe({
+         # lapply(1:length(players()), function(j) {
+    #      validateF7Input(
+     #       inputId = paste0("roundscore", 1),
+      #      pattern = "^-?[0-9]*",
+       #     error = "Only numbers please!"
+       #  )
+        #  })
         })
-      })
-    })
-    
+    #  })
+    #})
+
+observe({
+  validateF7Input(
+    inputId = "roundscore1",
+    pattern = "[0-9]*",
+    error = "Only numbers please!"
+  )
+})
+
+
     #start score
     scores <- reactiveValues()
     observeEvent(input$startbutton, {
@@ -267,18 +269,20 @@ shinyApp(
     poshigh <-
       eventReactive(input$numhigh | input$addbutton | nchar(input$arrange), {
         req(input$arrange)
+        req(input$numhigh)
         
-        arr <- (input$arrange == "The highest")
-        
-        ifelse(input$numhigh == 0,
-               0,
-               which((order(
-                 map_dbl(1:length(players()), ~ scores[[paste0("player", .)]]),
-                 decreasing = arr
-               )) <= input$numhigh))
+        if(input$numhigh == 0){
+          0
+        } else if(input$arrange == "The highest"){
+           s <- map_dbl(1:length(players()), ~ scores[[paste0("player", .)]])
+           which(s >= sort(s, decreasing = TRUE)[input$numhigh])
+        } else if(input$arrange == "The lowest"){
+          s <- map_dbl(1:length(players()), ~ scores[[paste0("player", .)]])
+          which(s <= sort(s)[input$numhigh])}
+           
       })
     
-    observeEvent(poshigh(), {
+    observeEvent(poshigh() | length(poshigh()), {
       ifelse(length(poshigh()) == 1 &  poshigh() == 0,
              lapply(1:length(players()), function(x) {
                updateF7Button(inputId = paste0("scorebutton", x),
