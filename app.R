@@ -10,7 +10,9 @@ library(shiny) #app
 library(shinyMobile) #app for smartphone
 library(tidyverse) #data management
 
-
+# define colors
+col_standard <- "yellow"
+col_highlight <- "pink"
 #getF7Colors()
 #f7Gallery()
 
@@ -20,7 +22,7 @@ shinyApp(
     options = list(
       theme = "md",
       dark = TRUE,
-      color = "deeppurple",
+      color = col_standard,
       allowPWA = TRUE
     ),
     f7TabLayout(
@@ -258,13 +260,13 @@ shinyApp(
     observeEvent(poshigh(), {
       lapply(1:length(players()), function(x) {
         updateF7Button(inputId = paste0("scorebutton", x),
-                       color = "deeppurple")
+                       color = col_standard)
       })
       
       if (input$numhigh > 0) {
         lapply(poshigh(), function(x) {
           updateF7Button(inputId = paste0("scorebutton", x),
-                         color = "pink")
+                         color = col_highlight)
         })
       }
     })
