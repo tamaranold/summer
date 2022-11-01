@@ -1,7 +1,7 @@
 {
-  "name": "app",
-  "short_name": "My App",
-  "description": "What it does!",
+  "name": "summer",
+  "short_name": "Summer",
+  "description": "Simple App to sum scores for each player",
   "lang": "en-US",
   "start_url": "/",
   "display": "standalone",
@@ -11,20 +11,6 @@
     {
       "src": "icons/icon-144.png",
       "sizes": "144x144"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Shortcut",
-      "short_name": "Shortcut",
-      "description": "Do something",
-      "url": "/?foo=1",
-      "icons": [
-        {
-          "src": "icons/shortcut.png",
-          "sizes": "192x192"
-        }
-      ]
     }
   ]
 }
