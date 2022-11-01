@@ -162,47 +162,10 @@ shinyApp(
             )
           )),
           title = players()[j])
-      }),
-      
-      f7Text(
-        inputId = "caption2",
-        label = "Enter a number",
-        value = 1
-      )
+      })
     })
     
-    
-    #accept numbers only in input$roundscore
-    #realtime update for input$roundscore
-    texts <- reactive({
-      req(input$roundscore1)
-      map_chr(1:length(players()), ~ input[[paste0("roundscore", .x)]])
-    })
-    
-    #observeEvent(input$startbutton | nchar(texts()), {
-     # lapply(1:length(players()), function(j) {
-    #    observe({
-         # lapply(1:length(players()), function(j) {
-    #      validateF7Input(
-     #       inputId = paste0("roundscore", 1),
-      #      pattern = "^-?[0-9]*",
-       #     error = "Only numbers please!"
-       #  )
-        #  })
-        })
-    #  })
-    #})
-
-observe({
-  validateF7Input(
-    inputId = "roundscore1",
-    pattern = "[0-9]*",
-    error = "Only numbers please!"
-  )
-})
-
-
-    #start score
+    #set start score for each player to 0
     scores <- reactiveValues()
     observeEvent(input$startbutton, {
       for (i in 1:length(players())) {
@@ -210,7 +173,7 @@ observe({
       }
     })
     
-    #sum score
+    #initiate summing of scores
     observeEvent(input$addbutton, {
       for (i in 1:length(players())) {
         scores[[paste0("player", i)]] <-
@@ -219,6 +182,7 @@ observe({
       }
     })
     
+    #show new sumscore and reset roundscore to 0
     observeEvent(input$addbutton, {
       lapply(1:length(players()), function(j) {
         updateF7Button(inputId = paste0("scorebutton", j),
@@ -229,7 +193,7 @@ observe({
       })
     })
     
-    #reset game
+    #button for resetting the game
     observeEvent(input$resetbutton, {
       lapply(1:length(players()), function(j) {
         updateF7Button(inputId = paste0("scorebutton", j),
@@ -240,13 +204,14 @@ observe({
       })
     })
     
-    #options
+    #button and inputs for highlighting
     observeEvent(input$optionsbutton, {
       updateF7Sheet(id = "optionssheet")
     })
     
     output$options <- renderUI({
       tagList(f7Row(f7Col(
+        #highlight decreasing or increasing numbers
         f7Radio(
           inputId = "arrange",
           choices = c("The highest",
@@ -256,6 +221,7 @@ observe({
         )
       ),
       f7Col(
+        #number of scores for highlighting
         f7Stepper(
           inputId = "numhigh",
           min = 0,
@@ -266,6 +232,7 @@ observe({
       )))
     })
     
+    #get position for highlighted scores
     poshigh <-
       eventReactive(input$numhigh | input$addbutton | nchar(input$arrange), {
         req(input$arrange)
@@ -282,16 +249,17 @@ observe({
            
       })
     
-    observeEvent(poshigh() | length(poshigh()), {
-      ifelse(length(poshigh()) == 1 &  poshigh() == 0,
-             lapply(1:length(players()), function(x) {
+    #highlight highest/lowest scores
+    observeEvent(poshigh(), {
+      lapply(1:length(players()), function(x) {
+        updateF7Button(inputId = paste0("scorebutton", x),
+                       color = "deeppurple")})
+      
+      if(input$numhigh > 0){
+               lapply(poshigh(), function(x) {
                updateF7Button(inputId = paste0("scorebutton", x),
-                              color = "deeppurple")
-             }),
-             lapply(poshigh(), function(x) {
-               updateF7Button(inputId = paste0("scorebutton", x),
-                              color = "pink")
-             }))
+                              color = "pink")})
+             }
     })
     
     
