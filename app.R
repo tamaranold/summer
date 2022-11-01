@@ -104,48 +104,46 @@ shinyApp(
     )
   ),
   
-    server = function(input, output, session) {
-      
-      ##start game (tabName = "Start")
-      #get numbers of players from stepper
-      number <- reactive({
-        input$numberplayer
-      }) 
-      
-      #create name slot for each player
-      output$namesplayer <- renderUI({
-        lapply(1:number(),
-               function(x) {
-                 f7Text(
-                   inputId = paste0("player", x),
-                   label = NULL,
-                   placeholder = paste("Name Player", x)
-                 )
-               })
-      })
-      
-     #list all players by name
-      players <- eventReactive(input$startbutton, {
-      p <- map_chr(1:number(), ~input[[paste0("player", .)]])
+  server = function(input, output, session) {
+    ##start game (tabName = "Start")
+    #get numbers of players from stepper
+    number <- reactive({
+      input$numberplayer
+    })
+    
+    #create name slot for each player
+    output$namesplayer <- renderUI({
+      lapply(1:number(),
+             function(x) {
+               f7Text(
+                 inputId = paste0("player", x),
+                 label = NULL,
+                 placeholder = paste("Name Player", x)
+               )
+             })
+    })
+    
+    #list all players by name
+    players <- eventReactive(input$startbutton, {
+      p <- map_chr(1:number(), ~ input[[paste0("player", .)]])
       p[p != ""]
     })
     
-
-    #initiate scoreingboard
-      observeEvent(input$startbutton, {
-        updateF7Tabs(session = session,
-                     id = 'tabs',
-                     selected = 'hiddentab')
-      })
     
-    ##sum scores (tabName = "hidden")  
+    #initiate scoreingboard
+    observeEvent(input$startbutton, {
+      updateF7Tabs(session = session,
+                   id = 'tabs',
+                   selected = 'hiddentab')
+    })
+    
+    ##sum scores (tabName = "hidden")
     #initiate scores for each player
     output$list <- renderUI({
       req(length(players()) > 0)
       
       lapply(1:length(players()), function(j) {
-        f7ListItem(
-          #sum score
+        f7ListItem(#sum score
           f7Row(f7Col(
             f7Button(
               inputId = paste0("scorebutton", j),
@@ -234,32 +232,36 @@ shinyApp(
     
     #get position for highlighted scores
     poshigh <-
-      eventReactive(input$numhigh | input$addbutton | nchar(input$arrange), {
-        req(input$arrange)
-        req(input$numhigh)
-        
-        if(input$numhigh == 0){
-          0
-        } else if(input$arrange == "The highest"){
-           s <- map_dbl(1:length(players()), ~ scores[[paste0("player", .)]])
-           which(s >= sort(s, decreasing = TRUE)[input$numhigh])
-        } else if(input$arrange == "The lowest"){
-          s <- map_dbl(1:length(players()), ~ scores[[paste0("player", .)]])
-          which(s <= sort(s)[input$numhigh])}
-           
-      })
+      eventReactive(input$numhigh |
+                      input$addbutton | nchar(input$arrange), {
+                        req(input$arrange)
+                        req(input$numhigh)
+                        
+                        if (input$numhigh == 0) {
+                          0
+                        } else if (input$arrange == "The highest") {
+                          s <- map_dbl(1:length(players()), ~ scores[[paste0("player", .)]])
+                          which(s >= sort(s, decreasing = TRUE)[input$numhigh])
+                        } else if (input$arrange == "The lowest") {
+                          s <- map_dbl(1:length(players()), ~ scores[[paste0("player", .)]])
+                          which(s <= sort(s)[input$numhigh])
+                        }
+                        
+                      })
     
     #highlight highest/lowest scores
     observeEvent(poshigh(), {
       lapply(1:length(players()), function(x) {
         updateF7Button(inputId = paste0("scorebutton", x),
-                       color = "deeppurple")})
+                       color = "deeppurple")
+      })
       
-      if(input$numhigh > 0){
-               lapply(poshigh(), function(x) {
-               updateF7Button(inputId = paste0("scorebutton", x),
-                              color = "pink")})
-             }
+      if (input$numhigh > 0) {
+        lapply(poshigh(), function(x) {
+          updateF7Button(inputId = paste0("scorebutton", x),
+                         color = "pink")
+        })
+      }
     })
     
     
