@@ -210,16 +210,20 @@ shinyApp(
     output$options <- renderUI({
       tagList(f7Row(f7Col(
         #highlight decreasing or increasing numbers
+        "Which scores do you want to highlight?",
         f7Radio(
           inputId = "arrange",
           choices = c("The highest",
                       "The lowest"),
           selected = "The highest",
-          label = "Which scores do you want to highlight?"
+          label = NULL
         )
       ),
       f7Col(
         #number of scores for highlighting
+        "How many scores do you want to highlight?",
+        br(),
+        br(),
         f7Stepper(
           inputId = "numhigh",
           min = 0,
