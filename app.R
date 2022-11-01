@@ -20,7 +20,8 @@ shinyApp(
     options = list(
       theme = "md",
       dark = TRUE,
-      color = "deeppurple"
+      color = "deeppurple",
+      allowPWA = TRUE
     ),
     f7TabLayout(
       navbar = f7Navbar(
