@@ -22,9 +22,9 @@ shinyApp(
     options = list(
       theme = "md",
       dark = TRUE,
-      color = col_standard,
+      color = col_standard),
       allowPWA = TRUE
-    ),
+    ,
     f7TabLayout(
       navbar = f7Navbar(
         title = "Summing scores for lazy players",
